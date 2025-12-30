@@ -2,7 +2,7 @@ import React from 'react'
 
 const Page = () => {
     return (
-        <section className={"w-full flex-between mx-auto p-10"}>
+        <section className={"section"}>
             <div className={"w-1/3 h-full"}>
                 <h1>Hello world</h1>
             </div>
