@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "username": "beeps",
+    "items": [
+      {
+        "productId": 1,
+        "name": "Refreshing Fruit Beverage",
+        "price": 5,
+        "quantity": 4,
+        "subtotal": 20
+      }
+    ],
+    "subtotal": 20,
+    "discount": 0,
+    "pointsUsed": 0,
+    "pointsEarned": 200,
+    "total": 20,
+    "status": "pending",
+    "createdAt": "2026-01-03T16:11:52.240Z"
+  }
+]

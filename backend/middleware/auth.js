@@ -1,9 +1,29 @@
-module.exports = (req, res, next) => {
-  if (!req.session.user) {
-    return res.status(401).json({ message: "Not logged in" });
+const jwt = require("jsonwebtoken");
+
+const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-key";
+
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; 
+
+  if (!token) {
+    return res.status(401).json({ message: "Access token required" });
   }
 
-  // Optional: log all protected requests
-  console.log(`Request from logged-in user: ${req.session.user.username}`);
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid or expired token" });
+    }
+    req.user = user;
+    next();
+  });
+}
+
+function isAdmin(req, res, next) {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Admin access required" });
+  }
   next();
-};
+}
+
+module.exports = { authenticateToken, isAdmin };

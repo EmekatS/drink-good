@@ -1,31 +1,327 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Beverage Store</title>
-  <style>body{font-family:Arial;padding:20px;}button{margin:5px;}input{margin:5px;}</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🥤 Beverage Store - Blockchain Loyalty</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      color: #667eea;
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .section {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 15px;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 10px;
+    }
+
+    input, button {
+      margin: 5px;
+      padding: 12px 20px;
+      font-size: 14px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .remove-btn {
+      background: #dc3545;
+      padding: 8px 15px;
+      font-size: 12px;
+    }
+
+    .remove-btn:hover {
+      background: #c82333;
+    }
+
+    #loginSection {
+      display: block;
+    }
+
+    #userInfo {
+      display: none;
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .product-card {
+      background: white;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .product-card h3 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+
+    .price {
+      font-size: 1.5em;
+      color: #28a745;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .cart-item {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .empty-cart {
+      text-align: center;
+      color: #999;
+      padding: 30px;
+      font-size: 1.2em;
+    }
+
+    .item-name {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .item-details {
+      color: #666;
+    }
+
+    #cartTotal {
+      background: #28a745;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1.2em;
+      margin: 20px 0;
+    }
+
+    .loyalty-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .points-balance {
+      font-size: 3em;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .points-value {
+      font-size: 1.2em;
+      margin: 5px 0;
+    }
+
+    .wallet-address {
+      font-size: 0.9em;
+      opacity: 0.9;
+      margin-top: 10px;
+      font-family: monospace;
+    }
+
+    .order-card {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    #authStatus, #orderStatus {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: none;
+    }
+
+    .notification.success {
+      background: #28a745;
+      color: white;
+    }
+
+    .notification.error {
+      background: #dc3545;
+      color: white;
+    }
+
+    .checkbox-container {
+      margin: 15px 0;
+      padding: 15px;
+      background: #fff3cd;
+      border-radius: 8px;
+      border: 2px solid #ffc107;
+    }
+
+    .checkbox-container label {
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    hr {
+      border: none;
+      height: 2px;
+      background: linear-gradient(to right, #667eea, #764ba2);
+      margin: 30px 0;
+    }
+  </style>
 </head>
 <body>
-  <h1>Beverage Store</h1>
+  <div class="container">
+    <h1> Beverage Store</h1>
+    <p class="subtitle">Blockchain-Powered Loyalty Rewards</p>
 
-  <h2>Auth</h2>
-  <input id="username" placeholder="Username" />
-  <input id="password" placeholder="Password" type="password" />
-  <button onclick="register()">Register</button>
-  <button onclick="login()">Login</button>
-  <p id="authStatus"></p>
+    <div id="notification" class="notification"></div>
 
-  <hr />
+    <div id="loginSection" class="section">
+      <h2>Login / Register</h2>
+      <input id="username" placeholder="Username" />
+      <input id="password" placeholder="Password" type="password" />
+      <button onclick="register()">Register</button>
+      <button onclick="login()">Login</button>
+      <p id="authStatus"></p>
+    </div>
 
-  <h2>Products</h2>
-  <div id="products"></div>
+    <div id="userInfo">
+      <strong>👤 Logged in as: <span id="currentUserName"></span></strong>
+      <button onclick="logout()" style="float: right;">Logout</button>
+    </div>
 
-  <hr />
+    <div class="section">
+      <div id="loyaltyInfo"></div>
+    </div>
 
-  <h2>Cart</h2>
-  <ul id="cart"></ul>
-  <button onclick="viewCart()">View Cart</button>
-  <button onclick="checkout()">Checkout</button>
-  <p id="orderStatus"></p>
+    <hr />
+
+    <div class="section">
+      <h2>Our Beverages</h2>
+      <div id="products"></div>
+    </div>
+
+    <hr />
+
+    <div class="section">
+      <h2>Your Cart</h2>
+      <ul id="cart"></ul>
+      <div id="cartTotal"></div>
+      
+      <div class="checkbox-container">
+        <label>
+          <input type="checkbox" id="usePointsCheckbox" />
+          Use my loyalty points for discount
+        </label>
+      </div>
+
+      <button onclick="viewCart()"> Refresh Cart</button>
+      <button id="checkoutBtn" onclick="checkout()" disabled>Checkout</button>
+      <p id="orderStatus"></p>
+    </div>
+
+    <hr />
+
+    <div class="section">
+      <h2> Order History</h2>
+      <button onclick="viewOrders()">View My Orders</button>
+      <div id="orderHistory"></div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
