@@ -50,12 +50,26 @@ async function addToCart(productId) {
 }
 
 async function viewCart() {
-  if (!currentUser) return alert("Login first");
+  if (!currentUser) {
+    console.log("Login first");
+    return;
+  }
+
   const res = await fetch(`http://localhost:5000/cart/${currentUser}`);
   const cart = await res.json();
+
   const ul = document.getElementById("cart");
   ul.innerHTML = "";
-  cart.forEach(p => ul.innerHTML += `<li>${p.name} - $${p.price}</li>`);
+
+  cart.forEach(item => {
+    ul.innerHTML += `
+      <li>
+        ${item.name} - $${item.price} × ${item.quantity}
+        = $${item.total}
+        <button onclick="removeFromCart(${item.productId})">Remove</button>
+      </li>
+    `;
+  });
 }
 
 async function checkout() {
@@ -67,5 +81,20 @@ async function checkout() {
   });
   const data = await res.json();
   document.getElementById("orderStatus").innerText = data.message + " Total: $" + data.total;
+  viewCart();
+}
+
+async function removeFromCart(productId) {
+  const res = await fetch("http://localhost:5000/cart/remove", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: currentUser,
+      productId
+    })
+  });
+
+  const data = await res.json();
+  console.log(data.message);
   viewCart();
 }

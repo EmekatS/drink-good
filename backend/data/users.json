@@ -1,7 +1,7 @@
 [
   {
     "username": "beeps",
-    "password": "12345",
+    "password": "$2b$10$99lLaE8ynBo8vrEief74AOMJ3mndp75vt3NzxMncv.4lufsm0cUVS",
     "role": "user"
   }
 ]
