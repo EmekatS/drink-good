@@ -5,6 +5,8 @@ const router = express.Router();
 
 const LOYALTY_POINTS_RATE = 0.10;
 
+const { getBlockchainService } = require("../services/blockchainService");
+
 router.post("/checkout", async (req, res) => {
   try {
     const { username, usePoints } = req.body;
@@ -88,6 +90,21 @@ router.post("/checkout", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Checkout failed", error: error.message });
   }
+
+  const blockchain = getBlockchainService();
+
+if (blockchain && user.walletAddress) {
+  const result = await blockchain.awardPoints(
+    user.walletAddress,
+    pointsEarned,
+    order.id
+  );
+  
+  if (result.success) {
+    order.blockchainTxHash = result.transactionHash;
+    console.log(` Points awarded on blockchain: ${result.transactionHash}`);
+  }
+}
 });
 
 router.get("/user/:username", (req, res) => {

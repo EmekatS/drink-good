@@ -7,6 +7,9 @@ const productRoutes = require("./routes/products");
 const cartRoutes = require("./routes/cart");
 const orderRoutes = require("./routes/orders");
 
+const { getBlockchainService } = require('./services/blockchainService');
+getBlockchainService();
+
 const app = express();
 app.use(cors());
 app.use(express.json());

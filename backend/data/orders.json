@@ -18,5 +18,45 @@
     "total": 20,
     "status": "pending",
     "createdAt": "2026-01-03T16:11:52.240Z"
+  },
+  {
+    "id": 2,
+    "username": "beeps",
+    "items": [
+      {
+        "productId": 1,
+        "name": "Refreshing Fruit Beverage",
+        "price": 5,
+        "quantity": 1,
+        "subtotal": 5
+      }
+    ],
+    "subtotal": 5,
+    "discount": 0,
+    "pointsUsed": 0,
+    "pointsEarned": 50,
+    "total": 5,
+    "status": "pending",
+    "createdAt": "2026-01-07T13:07:02.060Z"
+  },
+  {
+    "id": 3,
+    "username": "beeps",
+    "items": [
+      {
+        "productId": 1,
+        "name": "Refreshing Fruit Beverage",
+        "price": 5,
+        "quantity": 1,
+        "subtotal": 5
+      }
+    ],
+    "subtotal": 5,
+    "discount": 2.5,
+    "pointsUsed": 250,
+    "pointsEarned": 25,
+    "total": 2.5,
+    "status": "pending",
+    "createdAt": "2026-01-07T13:07:51.025Z"
   }
 ]
