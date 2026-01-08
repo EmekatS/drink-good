@@ -58,5 +58,25 @@
     "total": 2.5,
     "status": "pending",
     "createdAt": "2026-01-07T13:07:51.025Z"
+  },
+  {
+    "id": 4,
+    "username": "beeps",
+    "items": [
+      {
+        "productId": 1,
+        "name": "Refreshing Fruit Beverage",
+        "price": 5,
+        "quantity": 2,
+        "subtotal": 10
+      }
+    ],
+    "subtotal": 10,
+    "discount": 0.25,
+    "pointsUsed": 25,
+    "pointsEarned": 97,
+    "total": 9.75,
+    "status": "pending",
+    "createdAt": "2026-01-08T12:59:37.048Z"
   }
 ]

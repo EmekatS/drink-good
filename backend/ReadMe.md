@@ -48,7 +48,7 @@ npm run dev
 
 Server will run on `http://localhost:5000`
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 backend/
@@ -69,6 +69,17 @@ backend/
 ├── server.js              # Main server file
 └── package.json
 ```
+
+## How to Start
+- In Terminal A, enter the backend folder and type,
+```
+ganache
+```
+- In Terminal B, enter the backend folder and type,
+```
+npm run dev
+```
+- I believe you already have the Go Live Extension to run the index.html file
 
 ## 🔌 API Endpoints
 

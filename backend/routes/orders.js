@@ -3,10 +3,12 @@ const db = require("../data/db");
 
 const router = express.Router();
 
+// Loyalty points rate: 10% of order total
 const LOYALTY_POINTS_RATE = 0.10;
 
-const { getBlockchainService } = require("../services/blockchainService");
-
+/**
+ * Checkout - Create order and award loyalty points
+ */
 router.post("/checkout", async (req, res) => {
   try {
     const { username, usePoints } = req.body;
@@ -24,11 +26,13 @@ router.post("/checkout", async (req, res) => {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
+    // Find user
     const user = users.find(u => u.username === username);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Calculate order total
     const orderItems = cart.map(item => {
       const product = products.find(p => p.id === item.productId);
       return {
@@ -44,16 +48,20 @@ router.post("/checkout", async (req, res) => {
     let pointsUsed = 0;
     let discount = 0;
 
+    // Apply loyalty points if requested
     if (usePoints && user.loyaltyPoints > 0) {
+      // Each point = $0.01 discount
       discount = Math.min(user.loyaltyPoints * 0.01, total);
       pointsUsed = Math.floor(discount * 100);
       total -= discount;
       user.loyaltyPoints -= pointsUsed;
     }
 
+    // Calculate points earned (10% of final total)
     const pointsEarned = Math.floor(total * LOYALTY_POINTS_RATE * 100); // Convert to points
     user.loyaltyPoints = (user.loyaltyPoints || 0) + pointsEarned;
 
+    // Create order
     const orders = db.orders.getAll();
     const order = {
       id: orders.length + 1,
@@ -72,8 +80,10 @@ router.post("/checkout", async (req, res) => {
     orders.push(order);
     db.orders.saveAll(orders);
 
+    // Update user's loyalty points
     db.users.saveAll(users);
 
+    // Clear cart
     carts[username] = [];
     db.carts.saveAll(carts);
 
@@ -90,23 +100,11 @@ router.post("/checkout", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Checkout failed", error: error.message });
   }
-
-  const blockchain = getBlockchainService();
-
-if (blockchain && user.walletAddress) {
-  const result = await blockchain.awardPoints(
-    user.walletAddress,
-    pointsEarned,
-    order.id
-  );
-  
-  if (result.success) {
-    order.blockchainTxHash = result.transactionHash;
-    console.log(` Points awarded on blockchain: ${result.transactionHash}`);
-  }
-}
 });
 
+/**
+ * Get all orders for a user
+ */
 router.get("/user/:username", (req, res) => {
   try {
     const orders = db.orders.getAll();
@@ -121,6 +119,9 @@ router.get("/user/:username", (req, res) => {
   }
 });
 
+/**
+ * Get specific order by ID
+ */
 router.get("/:orderId", (req, res) => {
   try {
     const orders = db.orders.getAll();
@@ -136,6 +137,9 @@ router.get("/:orderId", (req, res) => {
   }
 });
 
+/**
+ * Get all orders (admin only)
+ */
 router.get("/", (req, res) => {
   try {
     const orders = db.orders.getAll();
@@ -148,6 +152,9 @@ router.get("/", (req, res) => {
   }
 });
 
+/**
+ * Update order status (admin only)
+ */
 router.put("/:orderId/status", (req, res) => {
   try {
     const { status } = req.body;
