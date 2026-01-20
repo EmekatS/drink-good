@@ -2,7 +2,7 @@
 
 A Node.js/Express backend for a beverage e-commerce platform featuring blockchain-based loyalty points system.
 
-## 🚀 Features
+##  Features
 
 - **Authentication**: User registration and login with JWT tokens
 - **Products**: CRUD operations for beverage products
@@ -20,7 +20,7 @@ A Node.js/Express backend for a beverage e-commerce platform featuring blockchai
 - Node.js (v14 or higher)
 - npm or yarn
 
-## 🛠️ Installation
+##  Installation
 
 1. **Install dependencies**:
 ```bash
@@ -81,7 +81,7 @@ npm run dev
 ```
 - I believe you already have the Go Live Extension to run the index.html file
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /auth/register` - Register new user (creates wallet automatically)
@@ -115,7 +115,7 @@ npm run dev
 - `POST /blockchain/transfer` - Transfer points between users
 - `GET /blockchain/wallet/:username` - Get wallet information
 
-## 📝 API Usage Examples
+##  API Usage Examples
 
 ### Register a User
 ```bash
@@ -165,7 +165,7 @@ curl -X POST http://localhost:5000/orders/checkout \
 curl http://localhost:5000/blockchain/loyalty/john
 ```
 
-## 🎯 How Loyalty Points Work
+##  How Loyalty Points Work
 
 1. **Earning Points**: 
    - When you complete an order, you earn 10% of the order total as points
@@ -195,9 +195,9 @@ To make this a true blockchain application:
 4. **Token Redemption** (burn tokens when used for discounts)
 5. **On-chain Verification** (verify all transactions on blockchain)
 
-## 🔐 Security Notes
+##  Security Notes
 
-⚠️ **IMPORTANT**: This is a development version!
+ **IMPORTANT**: This is a development version!
 
 - JWT secret should be stored in environment variables
 - User private keys should be encrypted (not stored in plain text)
@@ -206,10 +206,10 @@ To make this a true blockchain application:
 - Use HTTPS in production
 - Never expose private keys in responses
 
-## 🤝 Contributing
+## Contributing
 
 Feel free to submit issues and enhancement requests!
 
-## 📄 License
+## License
 
 ISC
