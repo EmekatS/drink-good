@@ -22,26 +22,26 @@ class BlockchainService {
 
   async awardPoints(userWalletAddress, points, orderId) {
     try {
-      console.log(`⛓️  Awarding ${points} points to ${userWalletAddress}`);
+      console.log(` Awarding ${points} points to ${userWalletAddress}`);
       const tx = await this.contract.awardPoints(userWalletAddress, points, orderId.toString());
       const receipt = await tx.wait();
-      console.log(`✅ Points awarded! TX: ${tx.hash}`);
+      console.log(`Points awarded! TX: ${tx.hash}`);
       return { success: true, transactionHash: tx.hash, blockNumber: receipt.blockNumber };
     } catch (error) {
-      console.error("❌ Error awarding points:", error.message);
+      console.error(" Error awarding points:", error.message);
       return { success: false, error: error.message };
     }
   }
 
   async redeemPoints(userWalletAddress, points, orderId) {
     try {
-      console.log(`⛓️  Redeeming ${points} points from ${userWalletAddress}`);
+      console.log(`  Redeeming ${points} points from ${userWalletAddress}`);
       const tx = await this.contract.redeemPoints(userWalletAddress, points, orderId.toString());
       const receipt = await tx.wait();
-      console.log(`✅ Points redeemed! TX: ${tx.hash}`);
+      console.log(` Points redeemed! TX: ${tx.hash}`);
       return { success: true, transactionHash: tx.hash, blockNumber: receipt.blockNumber };
     } catch (error) {
-      console.error("❌ Error redeeming points:", error.message);
+      console.error(" Error redeeming points:", error.message);
       return { success: false, error: error.message };
     }
   }
@@ -60,14 +60,14 @@ class BlockchainService {
     try {
       const network = await this.provider.getNetwork();
       const balance = await this.provider.getBalance(this.wallet.address);
-      console.log("✅ Blockchain connected!");
+      console.log(" Blockchain connected!");
       console.log(`   Network: ${network.name} (Chain ID: ${network.chainId})`);
       console.log(`   Wallet: ${this.wallet.address}`);
       console.log(`   Balance: ${ethers.formatEther(balance)} ETH`);
       console.log(`   Contract: ${process.env.CONTRACT_ADDRESS}`);
       return true;
     } catch (error) {
-      console.error("❌ Blockchain connection failed:", error.message);
+      console.error(" Blockchain connection failed:", error.message);
       return false;
     }
   }

@@ -1,6 +1,9 @@
+const API_URL = "http://localhost:3000";  // ← Backend URL
+
 let currentUser = "";
 let authToken = "";
 
+// Load user from session on page load
 window.onload = function() {
   const savedUser = localStorage.getItem("currentUser");
   const savedToken = localStorage.getItem("authToken");
@@ -26,16 +29,24 @@ async function register() {
 
   if (!username || !password) {
     document.getElementById("authStatus").innerText = "Please enter username and password";
+    document.getElementById("authStatus").style.color = "red";
     return;
   }
 
   try {
-    const res = await fetch("http://localhost:5000/auth/register", {
+    console.log("Registering user...");
+    
+    const res = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ username, password })
     });
+
+    console.log("Response status:", res.status);
     const data = await res.json();
+    console.log("Response data:", data);
     
     if (res.ok) {
       document.getElementById("authStatus").innerText = data.message + " - You got a blockchain wallet!";
@@ -45,7 +56,8 @@ async function register() {
       document.getElementById("authStatus").style.color = "red";
     }
   } catch (error) {
-    document.getElementById("authStatus").innerText = "Error: " + error.message;
+    console.error("Registration error:", error);
+    document.getElementById("authStatus").innerText = "Error: Cannot connect to server. Make sure backend is running on port 5000.";
     document.getElementById("authStatus").style.color = "red";
   }
 }
@@ -56,16 +68,24 @@ async function login() {
 
   if (!username || !password) {
     document.getElementById("authStatus").innerText = "Please enter username and password";
+    document.getElementById("authStatus").style.color = "red";
     return;
   }
 
   try {
-    const res = await fetch("http://localhost:5000/auth/login", {
+    console.log("Logging in...");
+    
+    const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ username, password })
     });
+
+    console.log("Response status:", res.status);
     const data = await res.json();
+    console.log("Response data:", data);
     
     if (res.ok) {
       currentUser = username;
@@ -82,7 +102,8 @@ async function login() {
       document.getElementById("authStatus").style.color = "red";
     }
   } catch (error) {
-    document.getElementById("authStatus").innerText = "Error: " + error.message;
+    console.error("Login error:", error);
+    document.getElementById("authStatus").innerText = "Error: Cannot connect to server. Make sure backend is running on port 5000.";
     document.getElementById("authStatus").style.color = "red";
   }
 }
@@ -99,16 +120,25 @@ function logout() {
   document.getElementById("cart").innerHTML = "";
   document.getElementById("loyaltyInfo").innerHTML = "";
   document.getElementById("authStatus").innerText = "Logged out successfully";
+  location.reload();
 }
 
 async function loadProducts() {
   try {
-    const res = await fetch("http://localhost:5000/products");
+    console.log("Loading products...");
+    const res = await fetch(`${API_URL}/products`);
     const data = await res.json();
+    console.log("Products:", data);
+    
     const products = data.products || data;
     
     const div = document.getElementById("products");
     div.innerHTML = "";
+    
+    if (products.length === 0) {
+      div.innerHTML = "<p>No products available. Run: npm run seed</p>";
+      return;
+    }
     
     products.forEach(p => {
       div.innerHTML += `
@@ -116,13 +146,14 @@ async function loadProducts() {
           <h3>${p.name}</h3>
           <p>${p.description || ''}</p>
           <p class="price">$${p.price.toFixed(2)}</p>
-          <input type="number" id="qty-${p.id}" value="1" min="1" max="10" style="width: 50px;" />
-          <button onclick="addToCart(${p.id})">Add to Cart</button>
+          <input type="number" id="qty-${p._id}" value="1" min="1" max="10" style="width: 50px;" />
+          <button onclick="addToCart('${p._id}')">Add to Cart</button>
         </div>
       `;
     });
   } catch (error) {
     console.error("Error loading products:", error);
+    document.getElementById("products").innerHTML = "<p>Error loading products. Is backend running?</p>";
   }
 }
 
@@ -135,7 +166,9 @@ async function addToCart(productId) {
   const quantity = parseInt(document.getElementById(`qty-${productId}`).value) || 1;
 
   try {
-    const res = await fetch("http://localhost:5000/cart/add", {
+    console.log("Adding to cart:", { username: currentUser, productId, quantity });
+    
+    const res = await fetch(`${API_URL}/cart/add`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
@@ -146,6 +179,7 @@ async function addToCart(productId) {
     });
     
     const data = await res.json();
+    console.log("Add to cart response:", data);
     
     if (res.ok) {
       showNotification("Added to cart!", "success");
@@ -154,19 +188,21 @@ async function addToCart(productId) {
       showNotification(data.message, "error");
     }
   } catch (error) {
+    console.error("Add to cart error:", error);
     showNotification("Error adding to cart", "error");
   }
 }
 
 async function viewCart() {
   if (!currentUser) {
-    showNotification("Please login first", "error");
     return;
   }
 
   try {
-    const res = await fetch(`http://localhost:5000/cart/${currentUser}`);
+    console.log("Viewing cart for:", currentUser);
+    const res = await fetch(`${API_URL}/cart/${currentUser}`);
     const data = await res.json();
+    console.log("Cart data:", data);
 
     const ul = document.getElementById("cart");
     ul.innerHTML = "";
@@ -187,7 +223,7 @@ async function viewCart() {
           <span class="item-details">
             $${item.price.toFixed(2)} × ${item.quantity} = $${item.subtotal.toFixed(2)}
           </span>
-          <button onclick="removeFromCart(${item.productId})" class="remove-btn">Remove</button>
+          <button onclick="removeFromCart('${item.productId}')" class="remove-btn">Remove</button>
         </li>
       `;
     });
@@ -198,7 +234,6 @@ async function viewCart() {
     `;
   } catch (error) {
     console.error("Error viewing cart:", error);
-    showNotification("Error loading cart", "error");
   }
 }
 
@@ -211,7 +246,8 @@ async function checkout() {
   const usePoints = document.getElementById("usePointsCheckbox").checked;
 
   try {
-    const res = await fetch("http://localhost:5000/orders/checkout", {
+    console.log("Checking out...");
+    const res = await fetch(`${API_URL}/orders/checkout`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
@@ -221,6 +257,7 @@ async function checkout() {
     });
     
     const data = await res.json();
+    console.log("Checkout response:", data);
     
     if (res.ok) {
       const message = `
@@ -241,6 +278,7 @@ async function checkout() {
       document.getElementById("orderStatus").style.color = "red";
     }
   } catch (error) {
+    console.error("Checkout error:", error);
     document.getElementById("orderStatus").innerText = "Checkout failed: " + error.message;
     document.getElementById("orderStatus").style.color = "red";
   }
@@ -250,7 +288,7 @@ async function removeFromCart(productId) {
   if (!currentUser) return;
 
   try {
-    const res = await fetch("http://localhost:5000/cart/remove", {
+    const res = await fetch(`${API_URL}/cart/remove`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -276,15 +314,16 @@ async function loadLoyaltyPoints() {
   if (!currentUser) return;
 
   try {
-    const res = await fetch(`http://localhost:5000/blockchain/loyalty/${currentUser}`);
+    const res = await fetch(`${API_URL}/auth/profile/${currentUser}`);
     const data = await res.json();
 
     if (res.ok) {
+      const pointsValue = ((data.loyaltyPoints || 0) * 0.01).toFixed(2);
       document.getElementById("loyaltyInfo").innerHTML = `
         <div class="loyalty-card">
           <h3>💎 Your Loyalty Points</h3>
-          <p class="points-balance">${data.loyaltyPoints} points</p>
-          <p class="points-value">Worth: $${data.pointsValue}</p>
+          <p class="points-balance">${data.loyaltyPoints || 0} points</p>
+          <p class="points-value">Worth: $${pointsValue}</p>
           <p class="wallet-address">Wallet: ${data.walletAddress.substring(0, 10)}...${data.walletAddress.substring(38)}</p>
         </div>
       `;
@@ -301,7 +340,7 @@ async function viewOrders() {
   }
 
   try {
-    const res = await fetch(`http://localhost:5000/orders/user/${currentUser}`);
+    const res = await fetch(`${API_URL}/orders/user/${currentUser}`);
     const data = await res.json();
 
     const ordersDiv = document.getElementById("orderHistory");
@@ -315,7 +354,7 @@ async function viewOrders() {
     data.orders.forEach(order => {
       ordersDiv.innerHTML += `
         <div class="order-card">
-          <p><strong>Order #${order.id}</strong> - ${new Date(order.createdAt).toLocaleDateString()}</p>
+          <p><strong>Order #${order._id.substring(0, 8)}</strong> - ${new Date(order.createdAt).toLocaleDateString()}</p>
           <p>Total: $${order.total.toFixed(2)}</p>
           <p>Status: ${order.status}</p>
           <p>Points Earned: ${order.pointsEarned || 0}</p>

@@ -1,14 +1,13 @@
 const express = require("express");
-const db = require("../data/db");
+const User = require("../models/User");
+const Product = require("../models/Product");
+const Cart = require("../models/Cart");
+const Order = require("../models/Order");
+const { getBlockchainService } = require("../services/blockchainService");
 
 const router = express.Router();
-
-// Loyalty points rate: 10% of order total
 const LOYALTY_POINTS_RATE = 0.10;
 
-/**
- * Checkout - Create order and award loyalty points
- */
 router.post("/checkout", async (req, res) => {
   try {
     const { username, usePoints } = req.body;
@@ -17,26 +16,20 @@ router.post("/checkout", async (req, res) => {
       return res.status(400).json({ message: "Username required" });
     }
 
-    const carts = db.carts.getAll();
-    const products = db.products.getAll();
-    const users = db.users.getAll();
-    const cart = carts[username];
-
-    if (!cart || cart.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
-    }
-
-    // Find user
-    const user = users.find(u => u.username === username);
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Calculate order total
-    const orderItems = cart.map(item => {
-      const product = products.find(p => p.id === item.productId);
+    const cart = await Cart.findOne({ username }).populate('items.productId');
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ message: "Cart is empty" });
+    }
+
+    const orderItems = cart.items.map(item => {
+      const product = item.productId;
       return {
-        productId: item.productId,
+        productId: product._id,
         name: product.name,
         price: product.price,
         quantity: item.quantity,
@@ -48,23 +41,17 @@ router.post("/checkout", async (req, res) => {
     let pointsUsed = 0;
     let discount = 0;
 
-    // Apply loyalty points if requested
     if (usePoints && user.loyaltyPoints > 0) {
-      // Each point = $0.01 discount
       discount = Math.min(user.loyaltyPoints * 0.01, total);
       pointsUsed = Math.floor(discount * 100);
       total -= discount;
       user.loyaltyPoints -= pointsUsed;
     }
 
-    // Calculate points earned (10% of final total)
-    const pointsEarned = Math.floor(total * LOYALTY_POINTS_RATE * 100); // Convert to points
-    user.loyaltyPoints = (user.loyaltyPoints || 0) + pointsEarned;
+    const pointsEarned = Math.floor(total * LOYALTY_POINTS_RATE * 100);
+    user.loyaltyPoints += pointsEarned;
 
-    // Create order
-    const orders = db.orders.getAll();
-    const order = {
-      id: orders.length + 1,
+    const order = new Order({
       username,
       items: orderItems,
       subtotal: orderItems.reduce((sum, item) => sum + item.subtotal, 0),
@@ -73,102 +60,86 @@ router.post("/checkout", async (req, res) => {
       pointsEarned,
       total,
       status: "pending",
-      walletAddress: user.walletAddress,
-      createdAt: new Date().toISOString()
-    };
+      walletAddress: user.walletAddress
+    });
 
-    orders.push(order);
-    db.orders.saveAll(orders);
+    await order.save();
 
-    // Update user's loyalty points
-    db.users.saveAll(users);
+    const blockchain = getBlockchainService();
+    if (blockchain && user.walletAddress) {
+      console.log(`🔗 Awarding ${pointsEarned} points on blockchain...`);
+      const result = await blockchain.awardPoints(
+        user.walletAddress,
+        pointsEarned,
+        order._id.toString()
+      );
+      if (result.success) {
+        order.blockchainTxHash = result.transactionHash;
+        await order.save();
+        console.log(`✅ Blockchain TX: ${result.transactionHash}`);
+      }
+    }
 
-    // Clear cart
-    carts[username] = [];
-    db.carts.saveAll(carts);
+    await user.save();
+    cart.items = [];
+    await cart.save();
 
     res.json({
       message: "Order placed successfully",
       order: {
-        id: order.id,
+        id: order._id,
         total: order.total,
         pointsEarned: order.pointsEarned,
         pointsUsed: order.pointsUsed,
-        newPointBalance: user.loyaltyPoints
+        newPointBalance: user.loyaltyPoints,
+        blockchainTx: order.blockchainTxHash
       }
     });
   } catch (error) {
+    console.error("Checkout error:", error);
     res.status(500).json({ message: "Checkout failed", error: error.message });
   }
 });
 
-/**
- * Get all orders for a user
- */
-router.get("/user/:username", (req, res) => {
+router.get("/user/:username", async (req, res) => {
   try {
-    const orders = db.orders.getAll();
-    const userOrders = orders.filter(o => o.username === req.params.username);
-
-    res.json({
-      orders: userOrders,
-      totalOrders: userOrders.length
-    });
+    const orders = await Order.find({ username: req.params.username }).sort({ createdAt: -1 });
+    res.json({ orders, totalOrders: orders.length });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch orders", error: error.message });
   }
 });
 
-/**
- * Get specific order by ID
- */
-router.get("/:orderId", (req, res) => {
+router.get("/:orderId", async (req, res) => {
   try {
-    const orders = db.orders.getAll();
-    const order = orders.find(o => o.id === parseInt(req.params.orderId));
-
+    const order = await Order.findById(req.params.orderId);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
-
     res.json(order);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch order", error: error.message });
   }
 });
 
-/**
- * Get all orders (admin only)
- */
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const orders = db.orders.getAll();
-    res.json({
-      orders,
-      totalOrders: orders.length
-    });
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json({ orders, totalOrders: orders.length });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch orders", error: error.message });
   }
 });
 
-/**
- * Update order status (admin only)
- */
-router.put("/:orderId/status", (req, res) => {
+router.put("/:orderId/status", async (req, res) => {
   try {
     const { status } = req.body;
-    const orders = db.orders.getAll();
-    const order = orders.find(o => o.id === parseInt(req.params.orderId));
-
+    const order = await Order.findById(req.params.orderId);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
-
     order.status = status;
-    order.updatedAt = new Date().toISOString();
-    db.orders.saveAll(orders);
-
+    await order.save();
     res.json({ message: "Order status updated", order });
   } catch (error) {
     res.status(500).json({ message: "Failed to update order", error: error.message });

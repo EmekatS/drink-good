@@ -2,10 +2,10 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { ethers } = require("ethers");
-const db = require("../data/db");
+const User = require("../models/User");
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-key";
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 router.post("/register", async (req, res) => {
   try {
@@ -15,28 +15,24 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Username and password required" });
     }
 
-    const users = db.users.getAll();
-    if (users.find(u => u.username === username)) {
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
       return res.status(400).json({ message: "Username already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const wallet = ethers.Wallet.createRandom();
 
-    const newUser = {
-      id: users.length + 1,
+    const newUser = new User({
       username,
       password: hashedPassword,
       role: role || "user",
       walletAddress: wallet.address,
-      walletPrivateKey: wallet.privateKey, 
-      loyaltyPoints: 0,
-      createdAt: new Date().toISOString()
-    };
+      walletPrivateKey: wallet.privateKey,
+      loyaltyPoints: 0
+    });
 
-    users.push(newUser);
-    db.users.saveAll(users);
+    await newUser.save();
 
     res.json({
       message: "User registered successfully",
@@ -44,6 +40,7 @@ router.post("/register", async (req, res) => {
       walletAddress: newUser.walletAddress
     });
   } catch (error) {
+    console.error("Registration error:", error);
     res.status(500).json({ message: "Registration failed", error: error.message });
   }
 });
@@ -56,9 +53,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Username and password required" });
     }
 
-    const users = db.users.getAll();
-    const user = users.find(u => u.username === username);
-    
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -85,14 +80,15 @@ router.post("/login", async (req, res) => {
       }
     });
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({ message: "Login failed", error: error.message });
   }
 });
 
-router.get("/profile/:username", (req, res) => {
+router.get("/profile/:username", async (req, res) => {
   try {
-    const users = db.users.getAll();
-    const user = users.find(u => u.username === req.params.username);
+    const user = await User.findOne({ username: req.params.username })
+      .select('-password -walletPrivateKey');
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -106,6 +102,7 @@ router.get("/profile/:username", (req, res) => {
       createdAt: user.createdAt
     });
   } catch (error) {
+    console.error("Profile fetch error:", error);
     res.status(500).json({ message: "Failed to fetch profile", error: error.message });
   }
 });
