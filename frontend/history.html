@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      href="https://cdn.boxicons.com/3.0.8/fonts/basic/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Drink Good</title>
+  </head>
+  <body>
+    <header class="py-4 flex justify-between items-center">
+      <nav class="flex gap-12 items-center">
+        <a href="./home.html">
+          <img src="./images/logo.png" alt="Logo" class="max-w-[100px]" />
+        </a>
+        <div class="flex gap-4">
+          <a href="./flavours.html">Flavours</a>
+          <a href="#">History</a>
+        </div>
+      </nav>
+      <div class="flex gap-4 items-center">
+        <a href="./login.html" class="flex gap-2 items-center"
+          ><i class="bx bx-user"></i> Sign In</a
+        >
+        <button
+          command="show-modal"
+          commandfor="drawer"
+          class="bg-indigo-400 px-2.5 py-1.5 cursor-pointer rounded-xl font-semibold transition-all duration-300 hover:bg-indigo-500 hover:scale-105"
+        >
+          Place Order
+        </button>
+        <div
+          class="flex gap-2 items-center border border-white px-2.5 py-1.5 rounded-xl"
+        >
+          <i class="bx bx-wallet"></i>
+          <span id="navWalletBalance">0.00</span>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="mt-10">
+        <h1 class="text-4xl font-bold text-indigo-400">Order History</h1>
+      </section>
+      <el-dialog>
+        <dialog
+          id="drawer"
+          aria-labelledby="drawer-title"
+          class="fixed inset-0 size-auto max-h-none max-w-none overflow-hidden bg-transparent not-open:hidden backdrop:bg-transparent"
+        >
+          <el-dialog-backdrop
+            class="absolute inset-0 bg-gray-500/75 transition-opacity duration-500 ease-in-out data-closed:opacity-0"
+          ></el-dialog-backdrop>
+
+          <div
+            tabindex="0"
+            class="absolute inset-0 pl-10 focus:outline-none sm:pl-16"
+          >
+            <el-dialog-panel
+              class="ml-auto block size-full max-w-md transform transition duration-500 ease-in-out data-closed:translate-x-full sm:duration-700"
+            >
+              <div
+                class="flex h-full flex-col overflow-y-auto bg-white shadow-xl"
+              >
+                <div class="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+                  <div class="flex items-start justify-between">
+                    <h2
+                      id="drawer-title"
+                      class="text-lg font-medium text-gray-900"
+                    >
+                      Shopping cart
+                    </h2>
+                    <div class="ml-3 flex h-7 items-center">
+                      <button
+                        type="button"
+                        command="close"
+                        commandfor="drawer"
+                        class="relative -m-2 p-2 text-gray-400 hover:text-gray-500"
+                      >
+                        <span class="absolute -inset-0.5"></span>
+                        <span class="sr-only">Close panel</span>
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          data-slot="icon"
+                          aria-hidden="true"
+                          class="size-6"
+                        >
+                          <path
+                            d="M6 18 18 6M6 6l12 12"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mt-8">
+                    <div class="flow-root">
+                      <ul
+                        role="list"
+                        id="cartList"
+                        class="-my-6 divide-y divide-gray-200"
+                      >
+                        <!-- Cart items will be injected here -->
+                        <li class="flex py-6 justify-center text-gray-500">
+                          Your cart is empty.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border-t border-gray-200 px-4 py-6 sm:px-6">
+                  <div
+                    class="flex justify-between text-base font-medium text-gray-900"
+                  >
+                    <p>Subtotal</p>
+                    <p id="cartSubtotal">$0.00</p>
+                  </div>
+                  <p class="mt-0.5 text-sm text-gray-500">
+                    Shipping and taxes calculated at checkout.
+                  </p>
+                  <div class="mt-6">
+                    <button
+                      id="checkoutBtn"
+                      onclick="checkout()"
+                      class="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-xs hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      Checkout
+                    </button>
+                  </div>
+                  <div
+                    class="mt-6 flex justify-center text-center text-sm text-gray-500"
+                  >
+                    <p>
+                      or
+                      <button
+                        type="button"
+                        command="close"
+                        commandfor="drawer"
+                        class="font-medium text-indigo-600 hover:text-indigo-500"
+                      >
+                        Continue Shopping
+                        <span aria-hidden="true"> &rarr;</span>
+                      </button>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </el-dialog-panel>
+          </div>
+        </dialog>
+      </el-dialog>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
